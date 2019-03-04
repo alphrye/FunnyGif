@@ -1,7 +1,6 @@
 package com.nexuslink.alphrye.funnygif;
 
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Movie;
@@ -16,8 +15,6 @@ public class FunnyGifView extends AppCompatImageView {
 
     private long mStartTime;
 
-    private int resId;
-
     public FunnyGifView(Context context) {
         this(context, null);
     }
@@ -31,11 +28,6 @@ public class FunnyGifView extends AppCompatImageView {
     }
 
     @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-    }
-
-    @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         if(mMovie != null){
@@ -46,7 +38,12 @@ public class FunnyGifView extends AppCompatImageView {
             int duration = mMovie.duration();
             long timePlay = nowTime - mStartTime;
             mMovie.setTime((int) (duration - timePlay % duration));
-            mMovie.draw(canvas, getWidth() / 2 - mMovie.width() / 2, getHeight() / 2 - mMovie.height() / 2);
+
+            float scaleWidth = (float) getWidth()/ (float) mMovie.width();
+            float scaleHeight = (float) getHeight() / (float) mMovie.height();
+            float scale = scaleHeight < scaleWidth ? scaleHeight : scaleWidth;
+            canvas.scale(scale, scale);
+            mMovie.draw(canvas, (getWidth() / 2 - scale * mMovie.width() / 2) / scale,  (getHeight() / 2 - scale * mMovie.height() / 2) / scale);
             invalidate();
         }
     }
@@ -54,10 +51,7 @@ public class FunnyGifView extends AppCompatImageView {
     /**
      * 设置gif资源
      */
-    public void setGifResource(int resId) {
-        this.resId = resId;
-        //测试本地资源
-        @SuppressLint("ResourceType") InputStream inputStream = getContext().getResources().openRawResource(R.drawable.test0);
+    public void setGifResource(InputStream inputStream) {
         mMovie = Movie.decodeStream(inputStream);
         mStartTime = 0;
     }
